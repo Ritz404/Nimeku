@@ -1,21 +1,42 @@
-MIT License
 
-Copyright (c) 2026 Always Ritz
+---
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## 2. Cara Mengambil API Key lewat Bot Telegram `@omnifylabs1_bot`
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Karena `@omnifylabs1_bot` adalah bot pihak ketiga di Telegram (dan dokumentasi publik resminya tidak terindeks secara rinci), ikuti alur standar penggunaan bot generator/penyedia API key di Telegram:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. Buka aplikasi Telegram dan cari username **`@omnifylabs1_bot`**, lalu buka obrolannya.
+2. Tekan tombol **Start** atau ketik `/start`.
+3. Ikuti menu atau tombol interaktif yang muncul di chat (biasanya berupa opsi seperti *Get API Key*, *Generate Key*, *Account*, *Quota/Limit*, atau perintah `/apikey` / `/key` sesuai panduan yang ditampilkan bot).
+4. Jika bot meminta syarat tertentu (misalnya bergabung ke channel/grup resmi, verifikasi akun, atau memilih paket/tipe key), selesaikan langkah yang diminta pada prompt bot.
+5. Salin API key yang diberikan bot dan simpan langsung ke variabel lingkungan lokal (misalnya `.env.local`)—jangan memasukkannya ke dalam kode sumber yang di-*push* ke repositori publik.
+
+---
+
+## 3. Cara Mengambil Cloudflare Turnstile & Konfigurasi Lainnya
+
+### A. Mengambil Site Key & Secret Key Cloudflare Turnstile
+Cloudflare Turnstile menyediakan dua kredensial utama untuk setiap *widget*: **Sitekey** (kunci publik untuk *widget* di sisi klien) dan **Secret key** (kunci privat untuk validasi token di sisi server melalui Siteverify API).
+
+1. Masuk ke dashboard Cloudflare di `dash.cloudflare.com` (akun gratis sudah dapat menggunakan Turnstile).
+2. Pada menu navigasi, buka bagian **Turnstile**.
+3. Pilih **Add widget**:
+   * Isi **Widget name** (misalnya `Nimeku`).
+   * Tambahkan *hostname* domain/subdomain yang akan memakai *widget* (domain Anda tidak wajib menggunakan DNS/proxy Cloudflare untuk memakai Turnstile).
+   * Pilih **Widget mode** (umumnya *Managed* untuk penyesuaian tantangan otomatis) dan wilayah *widget* yang diinginkan.
+4. Klik **Create** untuk menampilkan **Sitekey** dan **Secret key**.
+5. Pasang **Sitekey** di sisi *client/frontend* dan **Secret key** hanya di variabel lingkungan *server* (`src/app/api/turnstile/route.js` memvalidasi token di sisi server), karena mengekspos *secret key* ke sisi klien membahayakan keamanan[span_2](start_span)[span_2](end_span).
+
+### B. Variabel & Konfigurasi Lain yang Perlu Dicek di Proyek
+Sebelum menjalankan aplikasi, periksa isi `.env.example` serta file konfigurasi di `src/lib/` dan `src/app/api/` untuk memastikan seluruh variabel lingkungan yang dibutuhkan sudah terisi:
+
+* **Variabel `.env` / `.env.local`:** Cek nama variabel di `.env.example` dan referensi `process.env` pada `src/lib/` dan `src/app/api/` (seperti kunci API eksternal, URL *upstream* stream/katalog, *site key* & *secret key* Turnstile, serta kunci/pengaturan akses bila ada)[span_3](start_span)[span_3](end_span).
+* **Konfigurasi Domain & Hostname:** Pastikan domain/subdomain aplikasi sudah terdaftar pada daftar *hostname* *widget* Turnstile dan sesuai dengan konfigurasi *routing* di `next.config.mjs` serta `src/middleware.js`[span_4](start_span)[span_4](end_span).
+* **Keamanan Repositori:** Pastikan file rahasia seperti `.env` atau `.env.local` tercantum di `.gitignore` agar tidak ikut terunggah ke GitHub[span_5](start_span)[span_5](end_span).
+
+---
+
+Untuk menyesuaikan isi `.env` dan panduan menjalankan proyek di `README.md`, bagian mana yang ingin Anda cek berikutnya: isi `.env.example`, cara menjalankan Nimeku di VPS/lokal, atau bagian tertentu di `src/`?
+<ElicitationsGroup message="Bicarakan hal ini dengan Gemini Live">
+<Elicitation label="Coba percakapan suara real-time" query="Coba percakapan suara real-time" query_intent="OPEN_LIVE_MODE" />
+</ElicitationsGroup>
