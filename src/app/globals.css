@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* Palet "festival malam": indigo tinta + sakura + lentera */
+@theme {
+  --color-ink: #17132e;
+  --color-night: #221b45;
+  --color-edge: #3a3164;
+  --color-sakura: #ff6b8b;
+  --color-lantern: #ffc857;
+  --color-mist: #b9b2da;
+  --color-paper: #f6f1ff;
+}
+/* Font memakai variabel dari <body>, jadi harus di-inline */
+@theme inline {
+  --font-display: var(--f-display);
+  --font-sans: var(--f-body);
+}
+
+@layer base {
+  body { background: var(--color-ink); color: var(--color-paper); }
+  ::selection { background: var(--color-sakura); color: var(--color-ink); }
+  :focus-visible { outline: 2px solid var(--color-lantern); outline-offset: 2px; }
+}
+
+/* Placeholder poster berkilau selagi gambar dimuat */
+.skeleton {
+  background: linear-gradient(100deg, #221b45 30%, #342b63 50%, #221b45 70%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+/* Sembunyikan scrollbar pada baris geser */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Satu momen animasi saat halaman dibuka: kartu naik berurutan */
+.rise { animation: rise .55s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+/* Kelopak sakura berkedip bergantian di layar loading */
+.petal { animation: petal 1.2s ease-in-out infinite; animation-delay: calc(var(--i) * .15s); }
+@keyframes petal { 0%,100% { opacity: .3; } 40% { opacity: 1; } }
+.spin-slow { animation: spin 4s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Loader bulat */
+.orbit { animation: spin 1.8s linear infinite; }
+.orbit-rev { animation: spin 5s linear infinite reverse; }
+.breathe { animation: breathe 2.2s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: scale(1.05); } }
+
+/* Splash awal: tampil sebentar lalu memudar sendiri */
+.splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--color-ink); pointer-events: none; animation: splash-out .45s ease 1s forwards; }
+@keyframes splash-out { to { opacity: 0; visibility: hidden; } }
+
+/* Bilah geser video */
+.seek { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; border-radius: 99px; cursor: pointer; background: linear-gradient(to right, var(--color-sakura) var(--p, 0%), rgba(255,255,255,.28) var(--p, 0%)); }
+.seek::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 0; }
+.seek::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .rise, .petal, .spin-slow, .orbit, .orbit-rev, .breathe { animation: none !important; }
+  .splash { display: none; }
+}
+
+/* Efek scroll: bagian halaman muncul pelan saat masuk layar (CSS murni, tanpa JavaScript).
+   Browser yang belum mendukung tetap menampilkan konten seperti biasa. */
+@keyframes reveal-in { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+@keyframes grow-x { to { transform: scaleX(1); } }
+@supports (animation-timeline: view()) {
+  .reveal { animation: reveal-in linear both; animation-timeline: view(); animation-range: entry 0% entry 40%; }
+}
+/* Garis kemajuan scroll di bawah navbar */
+.scroll-progress { position: absolute; left: 0; bottom: -1px; height: 2px; width: 100%; background: var(--color-sakura); transform: scaleX(0); transform-origin: left; pointer-events: none; }
+@supports (animation-timeline: scroll()) {
+  .scroll-progress { animation: grow-x linear both; animation-timeline: scroll(root); }
+}
+
+/* Efek klik/ketuk: cincin kecil yang membesar lalu hilang */
+.tap-fx { position: fixed; z-index: 200; pointer-events: none; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; border: 2px solid var(--color-sakura); animation: tap-fx .55s ease-out forwards; }
+@keyframes tap-fx { from { transform: scale(.4); opacity: .9; } to { transform: scale(4.5); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .tap-fx, .scroll-progress { animation: none !important; }
+  .scroll-progress { display: none; }
+}
+
+/* Pop up komunitas */
+.popup-fade { animation: popup-fade .25s ease both; }
+.popup-card { animation: popup-card .35s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes popup-fade { from { opacity: 0; } }
+@keyframes popup-card { from { opacity: 0; transform: translateY(18px) scale(.96); } }
+@media (prefers-reduced-motion: reduce) { .popup-fade, .popup-card { animation: none !important; } }
+
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
