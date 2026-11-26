@@ -1,42 +1,71 @@
+# Nimeku
+
+**Nimeku** adalah aplikasi web *open-source* berbasis **Next.js** untuk menjelajah katalog, memantau jadwal rilis, serta menonton konten anime dan donghua. Selain pemutaran dan penjelajahan konten, proyek ini menghadirkan pelacakan riwayat serta statistik tontonan, daftar simpan favorit, pemantau notifikasi rilis, dukungan PWA / *service worker*, serta lapisan verifikasi akses berbasis Turnstile.
 
 ---
 
-## 2. Cara Mengambil API Key lewat Bot Telegram `@omnifylabs1_bot`
+## Bahasa Website & Stack Teknologi
 
-Karena `@omnifylabs1_bot` adalah bot pihak ketiga di Telegram (dan dokumentasi publik resminya tidak terindeks secara rinci), ikuti alur standar penggunaan bot generator/penyedia API key di Telegram:
-
-1. Buka aplikasi Telegram dan cari username **`@omnifylabs1_bot`**, lalu buka obrolannya.
-2. Tekan tombol **Start** atau ketik `/start`.
-3. Ikuti menu atau tombol interaktif yang muncul di chat (biasanya berupa opsi seperti *Get API Key*, *Generate Key*, *Account*, *Quota/Limit*, atau perintah `/apikey` / `/key` sesuai panduan yang ditampilkan bot).
-4. Jika bot meminta syarat tertentu (misalnya bergabung ke channel/grup resmi, verifikasi akun, atau memilih paket/tipe key), selesaikan langkah yang diminta pada prompt bot.
-5. Salin API key yang diberikan bot dan simpan langsung ke variabel lingkungan lokal (misalnya `.env.local`)—jangan memasukkannya ke dalam kode sumber yang di-*push* ke repositori publik.
+- **Bahasa Antarmuka & Rute:** Menggunakan Bahasa Indonesia pada tampilan dan *routing* halaman utama seperti `/jelajah`, `/jadwal`, `/riwayat`, `/simpan`, `/notifikasi`, `/pengaturan`, `/verifikasi`, `/acak`, `/donghua`, `/anime`, dan `/watch/[slug]`.
+- **Teknologi Inti:** Dibangun menggunakan **Next.js** dengan JavaScript / JSX (`jsconfig.json`, `next.config.mjs`, `postcss.config.mjs`), lengkap dengan komponen UI modular, modul logika di `src/lib/`, serta *route handler* di `src/app/api/`.
 
 ---
 
-## 3. Cara Mengambil Cloudflare Turnstile & Konfigurasi Lainnya
+## Struktur Direktori & Rute Proyek
 
-### A. Mengambil Site Key & Secret Key Cloudflare Turnstile
-Cloudflare Turnstile menyediakan dua kredensial utama untuk setiap *widget*: **Sitekey** (kunci publik untuk *widget* di sisi klien) dan **Secret key** (kunci privat untuk validasi token di sisi server melalui Siteverify API).
-
-1. Masuk ke dashboard Cloudflare di `dash.cloudflare.com` (akun gratis sudah dapat menggunakan Turnstile).
-2. Pada menu navigasi, buka bagian **Turnstile**.
-3. Pilih **Add widget**:
-   * Isi **Widget name** (misalnya `Nimeku`).
-   * Tambahkan *hostname* domain/subdomain yang akan memakai *widget* (domain Anda tidak wajib menggunakan DNS/proxy Cloudflare untuk memakai Turnstile).
-   * Pilih **Widget mode** (umumnya *Managed* untuk penyesuaian tantangan otomatis) dan wilayah *widget* yang diinginkan.
-4. Klik **Create** untuk menampilkan **Sitekey** dan **Secret key**.
-5. Pasang **Sitekey** di sisi *client/frontend* dan **Secret key** hanya di variabel lingkungan *server* (`src/app/api/turnstile/route.js` memvalidasi token di sisi server), karena mengekspos *secret key* ke sisi klien membahayakan keamanan[span_2](start_span)[span_2](end_span).
-
-### B. Variabel & Konfigurasi Lain yang Perlu Dicek di Proyek
-Sebelum menjalankan aplikasi, periksa isi `.env.example` serta file konfigurasi di `src/lib/` dan `src/app/api/` untuk memastikan seluruh variabel lingkungan yang dibutuhkan sudah terisi:
-
-* **Variabel `.env` / `.env.local`:** Cek nama variabel di `.env.example` dan referensi `process.env` pada `src/lib/` dan `src/app/api/` (seperti kunci API eksternal, URL *upstream* stream/katalog, *site key* & *secret key* Turnstile, serta kunci/pengaturan akses bila ada)[span_3](start_span)[span_3](end_span).
-* **Konfigurasi Domain & Hostname:** Pastikan domain/subdomain aplikasi sudah terdaftar pada daftar *hostname* *widget* Turnstile dan sesuai dengan konfigurasi *routing* di `next.config.mjs` serta `src/middleware.js`[span_4](start_span)[span_4](end_span).
-* **Keamanan Repositori:** Pastikan file rahasia seperti `.env` atau `.env.local` tercantum di `.gitignore` agar tidak ikut terunggah ke GitHub[span_5](start_span)[span_5](end_span).
+- **Halaman & Route (`src/app/`)**
+  - `src/app/(site)/`: Beranda (`page.jsx`), jelajah (`/jelajah`), jadwal tayang (`/jadwal`), anime (`/anime`, `/anime/[slug]`), donghua (`/donghua`), halaman tonton (`/watch/[slug]`), riwayat (`/riwayat`), simpan (`/simpan`), notifikasi (`/notifikasi`), dan pengaturan (`/pengaturan`).
+  - `src/app/acak/route.js`: *Route* untuk mengacak pilihan judul/konten.
+  - `src/app/verifikasi/page.jsx`: Halaman verifikasi pengguna.
+  - `src/app/img/[...path]/route.js`: *Route* dinamis untuk penanganan dan/atau *proxy* gambar.
+  - `src/app/api/`: Kumpulan *endpoint* API meliputi `stream`, `turnstile`, `suggest`, `update`, `genres`, `list`, `cek`, dan `warm`.
+  - `src/middleware.js`, `src/instrumentation.js`, `src/app/layout.jsx`, `src/app/globals.css`, dan `src/app/icon.svg`.
+- **Komponen Antarmuka (`src/components/`)**
+  - Pemutaran & katalog: `WatchClient.jsx`, `EpisodeList.jsx`, `NextUp.jsx`, `Trailer.jsx`, `Catalog.jsx`, `ResultGrid.jsx`, `AnimeCard.jsx`, dan `Poster.jsx`.
+  - Banner & navigasi: `Banner.jsx`, `CanvasBanner.jsx`, `ContinueRow.jsx`, `Navbar.jsx`, `BottomNav.jsx`, `BackToTop.jsx`, dan `Accent.jsx`.
+  - Aktivitas & notifikasi: `Schedule.jsx`, `AirTime.jsx`, `HistoryCard.jsx`, `WatchStats.jsx`, `SaveButtons.jsx`, `UpdateWatcher.jsx`, `MineToday.jsx`, dan `CommunityPopup.jsx`.
+  - Efek & *loading*: `TapFx.jsx`, `Loader.jsx`, dan `FsLoading.jsx`.
+- **Modul Logika & Utilitas (`src/lib/`)**
+  - Data & pemutaran: `api.js`, `catalog.js`, `catalogdef.js`, `streams.js`, dan `normalize.js`.
+  - Jadwal, notifikasi & penyimpanan: `schedule.js`, `notif.js`, `store.js`, dan `community.js`.
+  - Akses, batas & kunci: `gate.js`, `limit.js`, `key.js`, dan `fsflag.js`.
+- **Aset Publik & Skrip Root**
+  - `public/` dan `public/sw.js` untuk aset statis serta dukungan *service worker* / PWA.
+  - Skrip di root: `serve.mjs`, `watch.mjs`, `tes.mjs`, dan `peek.mjs`, ditambah `package.json`, `.env.example`, dan `.gitignore`.
 
 ---
 
-Untuk menyesuaikan isi `.env` dan panduan menjalankan proyek di `README.md`, bagian mana yang ingin Anda cek berikutnya: isi `.env.example`, cara menjalankan Nimeku di VPS/lokal, atau bagian tertentu di `src/`?
-<ElicitationsGroup message="Bicarakan hal ini dengan Gemini Live">
-<Elicitation label="Coba percakapan suara real-time" query="Coba percakapan suara real-time" query_intent="OPEN_LIVE_MODE" />
-</ElicitationsGroup>
+## Info Menarik & Detail Arsitektur Proyek
+
+- **Komponen Pemutar & Katalog yang Kaya Fitur:** `WatchClient.jsx` memiliki ukuran berkas paling besar di `src/components/` karena menangani interaksi halaman tonton, sementara `CanvasBanner.jsx` menghadirkan tampilan *banner* berbasis kanvas yang lebih dinamis.
+- **Pelacakan Aktivitas Pengguna:** Kombinasi `WatchStats.jsx`, `HistoryCard.jsx`, `ContinueRow.jsx`, dan `SaveButtons.jsx` memungkinkan pengguna melanjutkan tontonan, melihat statistik menonton, serta mengelola daftar favorit.
+- **Pemantau Pembaruan & *Warming* API:** Terdapat fitur pemantauan pembaruan (`UpdateWatcher.jsx`, `MineToday.jsx`, `/api/update`) serta *endpoint* `/api/warm` dan `/api/cek` untuk mengecek atau memanaskan data/cache lebih awal.
+- **Gerbang Keamanan & Pembatasan:** Selain verifikasi Turnstile (`/verifikasi` dan `/api/turnstile`), modul `gate.js`, `limit.js`, dan `key.js` di `src/lib/` menunjukkan adanya lapisan kontrol akses, *rate/usage limit*, serta manajemen kunci.
+- **Skrip Bantu Eksperimental/Operasional di Root:** Keberadaan `serve.mjs`, `watch.mjs`, `tes.mjs`, dan `peek.mjs` memberikan titik masuk tambahan untuk menjalankan *server*, memantau perubahan, menguji, atau mengintip alur proyek di luar perintah standar Next.js.
+
+---
+
+## Cara Mengambil API Key (`@omnifylabs1_bot`)
+
+1. Buka Telegram, cari **`@omnifylabs1_bot`**, lalu tekan **Start** atau kirim `/start`.
+2. Ikuti tombol menu atau perintah yang muncul pada bot untuk membuat maupun mengambil API key (selesaikan langkah verifikasi/ketentuan bot bila diminta).
+3. Salin API key ke berkas `.env.local` (atau `.env`) di folder utama proyek—hindari menulis API key langsung di dalam kode atau mengunggahnya ke repositori publik.
+
+---
+
+## Cara Mengambil & Memasang Cloudflare Turnstile
+
+1. Masuk ke dashboard Cloudflare di `dash.cloudflare.com` dan buka menu **Turnstile**.
+2. Klik **Add widget**, isi nama *widget* (misalnya `Nimeku`), tambahkan *hostname* domain/subdomain yang digunakan, lalu pilih mode *widget* (misalnya *Managed*).
+3. Klik **Create** untuk mendapatkan **Site Key** dan **Secret Key**.
+4. Simpan **Site Key** (sisi *client*) dan **Secret Key** (validasi sisi *server* pada `src/app/api/turnstile/route.js` dan halaman `src/app/verifikasi/page.jsx`) di variabel lingkungan `.env.local`.
+5. Cek `.env.example`, `src/app/api/`, dan `src/lib/` agar seluruh nama variabel lingkungan sudah sesuai sebelum menjalankan aplikasi.
+
+---
+
+## Cara Menjalankan Manual (NPM atau PM2)
+
+Pastikan file proyek sudah berada di folder kerja dan dependensi sudah terinstal:
+
+```bash
+npm install
